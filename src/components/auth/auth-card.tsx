@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuthStore } from "@/store/auth-store";
 
 type Mode = "login" | "register" | "forgot";
 
@@ -18,6 +19,7 @@ export function AuthCard({ mode }: { mode: Mode }) {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const login = useAuthStore((state) => state.login);
 
   const title =
     mode === "login"
@@ -38,26 +40,29 @@ export function AuthCard({ mode }: { mode: Mode }) {
     setError("");
     setLoading(true);
 
-    window.setTimeout(() => {
+    window.setTimeout(async () => {
       if (mode === "forgot") {
         setLoading(false);
         setError("Password reset links are mocked in this frontend demo.");
         return;
       }
 
-      const isValid =
-        email.trim().toLowerCase() === "demo@receiptvault.com" &&
-        password === "demo1234" &&
-        (mode !== "register" || name.trim().length > 1);
-
-      if (!isValid) {
+      if (mode === "register" && name.trim().length < 2) {
         setLoading(false);
+        setError("Please enter your full name.");
+        return;
+      }
+
+      const ok = await login(email, password);
+      setLoading(false);
+
+      if (!ok) {
         setError("Use demo@receiptvault.com / demo1234 to sign in.");
         return;
       }
 
       router.push("/dashboard");
-    }, 450);
+    }, 250);
   };
 
   return (

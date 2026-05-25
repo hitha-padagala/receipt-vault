@@ -14,24 +14,29 @@ import {
 } from "recharts";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { categoryBreakdown, monthlyExpenses } from "@/data/mock";
 
 const colors = ["#4f46e5", "#0ea5e9", "#10b981", "#f59e0b", "#64748b"];
 
-export function DashboardCharts() {
+export function DashboardCharts({
+  monthlyExpenses,
+  categoryBreakdown,
+}: {
+  monthlyExpenses: { month: string; value: number }[];
+  categoryBreakdown: { name: string; value: number }[];
+}) {
   return (
     <div className="grid gap-6 xl:grid-cols-3">
       <Card className="xl:col-span-2 p-5">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <div className="text-lg font-semibold">Monthly expenses</div>
-            <div className="text-sm text-muted-foreground">Cash flow trend across the last six months</div>
+            <div className="text-sm text-muted-foreground">Derived from the current receipt store</div>
           </div>
-          <Badge tone="success">Live mock data</Badge>
+          <Badge tone="success">Mock data</Badge>
         </div>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={monthlyExpenses}>
+            <AreaChart data={monthlyExpenses.length ? monthlyExpenses : [{ month: "N/A", value: 0 }]}>
               <defs>
                 <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.35} />
@@ -56,8 +61,8 @@ export function DashboardCharts() {
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={categoryBreakdown} dataKey="value" nameKey="name" innerRadius={65} outerRadius={100} paddingAngle={3}>
-                {categoryBreakdown.map((_, i) => (
+              <Pie data={categoryBreakdown.length ? categoryBreakdown : [{ name: "N/A", value: 0 }]} dataKey="value" nameKey="name" innerRadius={65} outerRadius={100} paddingAngle={3}>
+                {(categoryBreakdown.length ? categoryBreakdown : [{ name: "N/A", value: 0 }]).map((_, i) => (
                   <Cell key={i} fill={colors[i % colors.length]} />
                 ))}
               </Pie>

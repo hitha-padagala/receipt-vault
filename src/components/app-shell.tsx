@@ -1,12 +1,15 @@
 "use client";
 
 import { LayoutDashboard, ReceiptText, Upload, LineChart, Settings, Search, Menu, Bell, Plus, LogOut } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth-store";
+import { useInitialAuth } from "@/hooks/use-initial-auth";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -18,6 +21,17 @@ const nav = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuthStore((state) => state.user);
+  const hydrated = useAuthStore((state) => state.hydrated);
+  const logout = useAuthStore((state) => state.logout);
+  useInitialAuth();
+
+  useEffect(() => {
+    if (hydrated && !user) router.replace("/login");
+  }, [hydrated, router, user]);
+
   return (
     <div className="page-shell min-h-screen">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
@@ -30,7 +44,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <nav className="space-y-1">
             {nav.map(({ href, label, icon: Icon }) => (
-              <Link key={href} href={href} className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground">
+              <Link
+                key={href}
+                href={href}
+                className={cn(
+                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition hover:bg-muted hover:text-foreground",
+                  pathname === href && "bg-muted text-foreground",
+                )}
+              >
                 <Icon size={16} />
                 {label}
               </Link>
@@ -39,12 +60,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 p-4 text-white">
             <div className="text-sm font-medium">Quick upload</div>
             <div className="mt-1 text-sm/6 text-white/80">Capture receipts instantly from anywhere.</div>
-            <Button className="mt-4 w-full bg-white text-slate-900 hover:bg-white/90">
+            <Button
+              type="button"
+              className="mt-4 w-full bg-white text-slate-900 hover:bg-white/90"
+              onClick={() => router.push("/upload")}
+            >
               <Plus size={16} /> Upload receipt
             </Button>
           </div>
           <div className="mt-8">
-            <Button variant="ghost" className="w-full justify-start text-muted-foreground">
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full justify-start text-muted-foreground"
+              onClick={async () => {
+                await logout();
+                router.push("/login");
+              }}
+            >
               <LogOut size={16} /> Sign out
             </Button>
           </div>
@@ -58,7 +91,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
               <div className="relative max-w-xl flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                <Input className="pl-9" placeholder="Search receipts, merchants, categories..." />
+                <Input
+                  className="pl-9"
+                  placeholder="Search receipts, merchants, categories..."
+                />
               </div>
               <ThemeSwitcher />
               <Button variant="outline" className="hidden sm:inline-flex">
