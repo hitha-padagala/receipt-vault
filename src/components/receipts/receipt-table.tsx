@@ -1,9 +1,17 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Receipt } from "@/types/receipt";
+import { Trash2 } from "lucide-react";
 import { formatDate, formatMoney, isWarrantyActive } from "@/utils/date";
 
-export function ReceiptTable({ receipts }: { receipts: Receipt[] }) {
+export function ReceiptTable({
+  receipts,
+  onDelete,
+}: {
+  receipts: Receipt[];
+  onDelete?: (receipt: Receipt) => void;
+}) {
   return (
     <Card className="overflow-hidden">
       <table className="w-full text-left text-sm">
@@ -14,6 +22,7 @@ export function ReceiptTable({ receipts }: { receipts: Receipt[] }) {
             <th>Category</th>
             <th>Purchase date</th>
             <th>Warranty</th>
+            <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -27,6 +36,18 @@ export function ReceiptTable({ receipts }: { receipts: Receipt[] }) {
                 <Badge tone={isWarrantyActive(receipt.warrantyExpiry) ? "success" : "warning"}>
                   {receipt.warrantyExpiry ? `Expires ${formatDate(receipt.warrantyExpiry)}` : "No warranty"}
                 </Badge>
+              </td>
+              <td className="px-4 py-3 text-right">
+                {onDelete && (
+                  <Button
+                    variant="ghost"
+                    className="h-9 w-9 rounded-full p-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                    onClick={() => onDelete(receipt)}
+                    aria-label={`Delete ${receipt.merchant}`}
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                )}
               </td>
             </tr>
           ))}

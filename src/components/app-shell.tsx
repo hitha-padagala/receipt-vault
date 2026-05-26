@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, ReceiptText, Upload, LineChart, Settings, Search, Menu, Bell, Plus, LogOut } from "lucide-react";
+import { LayoutDashboard, ReceiptText, Upload, LineChart, Settings, Search, Menu, Bell, Plus, LogOut, UserCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ const nav = [
   { href: "/receipts", label: "Receipts", icon: ReceiptText },
   { href: "/upload", label: "Upload", icon: Upload },
   { href: "/analytics", label: "Analytics", icon: LineChart },
+  { href: "/profile", label: "Profile", icon: UserCircle2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -100,7 +101,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Button variant="outline" className="hidden sm:inline-flex">
                 <Bell size={16} /> Alerts
               </Button>
-              <Button variant="gradient">
+              <Button variant="gradient" onClick={() => router.push("/profile")}>
                 <Plus size={16} /> Add receipt
               </Button>
             </div>

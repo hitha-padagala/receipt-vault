@@ -18,7 +18,7 @@ async def save_upload_file(file: UploadFile, upload_dir: str) -> str:
     destination = folder / unique_name
     content = await file.read()
     destination.write_bytes(content)
-    return str(destination.as_posix())
+    return f"/uploads/{unique_name}"
 
 
 def allowed_upload(filename: str) -> bool:

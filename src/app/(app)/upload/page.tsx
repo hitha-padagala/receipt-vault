@@ -1,15 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/upload/progress";
 import { useReceiptStore } from "@/store/receipt-store";
 import { FileText, UploadCloud, X } from "lucide-react";
 import { ReceiptCategory } from "@/types/receipt";
+import { formatDate, isWarrantyActive } from "@/utils/date";
 
 type PreviewItem = {
   file: File;
@@ -17,7 +19,10 @@ type PreviewItem = {
 };
 
 export default function UploadPage() {
+  const hydrate = useReceiptStore((s) => s.hydrate);
   const upload = useReceiptStore((s) => s.upload);
+  const removeReceipt = useReceiptStore((s) => s.removeReceipt);
+  const receipts = useReceiptStore((s) => s.receipts);
   const uploadProgress = useReceiptStore((s) => s.uploadProgress);
   const uploadError = useReceiptStore((s) => s.uploadError);
   const [items, setItems] = useState<PreviewItem[]>([]);
@@ -29,6 +34,10 @@ export default function UploadPage() {
   const [ocrText, setOcrText] = useState("");
 
   const previews = useMemo(() => items, [items]);
+
+  useEffect(() => {
+    void hydrate();
+  }, [hydrate]);
 
   const addFiles = (files: FileList | null) => {
     if (!files) return;
@@ -153,8 +162,39 @@ export default function UploadPage() {
         ))}
       </div>
 
-      <Card className="p-5 text-sm text-muted-foreground">
-        Receipts are now created through the backend API and saved in PostgreSQL.
+      <Card className="p-5">
+        <div className="mb-4">
+          <div className="text-lg font-semibold">Saved receipts</div>
+          <p className="text-sm text-muted-foreground">Delete a receipt from PostgreSQL without leaving upload.</p>
+        </div>
+        <div className="space-y-3">
+          {receipts.slice(0, 5).map((receipt) => (
+            <div key={receipt.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border px-4 py-3">
+              <div>
+                <div className="font-medium">{receipt.merchant}</div>
+                <div className="text-sm text-muted-foreground">
+                  {receipt.category} · {formatDate(receipt.purchaseDate)} · ${receipt.amount.toFixed(2)}
+                </div>
+                <div className="mt-2">
+                  <Badge tone={receipt.warrantyExpiry ? (isWarrantyActive(receipt.warrantyExpiry) ? "success" : "warning") : "outline"}>
+                    {receipt.warrantyExpiry ? `Warranty ${formatDate(receipt.warrantyExpiry)}` : "No warranty"}
+                  </Badge>
+                </div>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (window.confirm(`Delete receipt from ${receipt.merchant}? This cannot be undone.`)) {
+                    void removeReceipt(receipt.id);
+                  }
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          ))}
+          {receipts.length === 0 && <div className="text-sm text-muted-foreground">No saved receipts yet.</div>}
+        </div>
       </Card>
     </div>
   );

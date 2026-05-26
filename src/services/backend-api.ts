@@ -65,6 +65,12 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
   return response.json() as Promise<T>;
 }
 
+function resolveImageUrl(value: string) {
+  if (!value) return value;
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  return `${API_BASE_URL}${value.startsWith("/") ? value : `/${value}`}`;
+}
+
 export function toUser(data: AuthResponse["user"]): User {
   return {
     id: String(data.id),
@@ -82,7 +88,7 @@ export function toReceipt(data: ReceiptResponse): Receipt {
     category: data.category,
     purchaseDate: data.purchase_date,
     warrantyExpiry: data.warranty_expiry,
-    imageUrl: data.image_url,
+    imageUrl: resolveImageUrl(data.image_url),
     ocrText: data.ocr_text ?? "",
     items: [],
     tax: 0,

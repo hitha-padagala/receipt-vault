@@ -16,6 +16,7 @@ const categories: (ReceiptCategory | "All")[] = ["All", "Electronics", "Grocerie
 
 export default function ReceiptsPage() {
   const hydrate = useReceiptStore((s) => s.hydrate);
+  const removeReceipt = useReceiptStore((s) => s.removeReceipt);
   const state = useReceiptStore();
   const filtered = useMemo(() => getFilteredReceipts(state), [state]);
 
@@ -69,9 +70,28 @@ export default function ReceiptsPage() {
         <Card className="p-10 text-center text-muted-foreground">No receipts matched your filters.</Card>
       ) : (
         <>
-          {state.view === "table" ? <ReceiptTable receipts={pageItems} /> : (
+          {state.view === "table" ? (
+            <ReceiptTable
+              receipts={pageItems}
+              onDelete={(receipt) => {
+                if (window.confirm(`Delete receipt from ${receipt.merchant}? This cannot be undone.`)) {
+                  void removeReceipt(receipt.id);
+                }
+              }}
+            />
+          ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {pageItems.map((receipt) => <ReceiptCard key={receipt.id} receipt={receipt} />)}
+              {pageItems.map((receipt) => (
+                <ReceiptCard
+                  key={receipt.id}
+                  receipt={receipt}
+                  onDelete={(item) => {
+                    if (window.confirm(`Delete receipt from ${item.merchant}? This cannot be undone.`)) {
+                      void removeReceipt(item.id);
+                    }
+                  }}
+                />
+              ))}
             </div>
           )}
           <Pagination page={state.page} totalPages={totalPages} onPageChange={state.setPage} />
