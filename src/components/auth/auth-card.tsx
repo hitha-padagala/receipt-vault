@@ -17,9 +17,10 @@ export function AuthCard({ mode }: { mode: Mode }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const login = useAuthStore((state) => state.login);
+  const register = useAuthStore((state) => state.register);
+  const storeError = useAuthStore((state) => state.error);
 
   const title =
     mode === "login"
@@ -37,29 +38,17 @@ export function AuthCard({ mode }: { mode: Mode }) {
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setError("");
     setLoading(true);
 
     window.setTimeout(async () => {
       if (mode === "forgot") {
         setLoading(false);
-        setError("Password reset links are mocked in this frontend demo.");
         return;
       }
 
-      if (mode === "register" && name.trim().length < 2) {
-        setLoading(false);
-        setError("Please enter your full name.");
-        return;
-      }
-
-      const ok = await login(email, password);
+      const ok = mode === "register" ? await register(email, password) : await login(email, password);
       setLoading(false);
-
-      if (!ok) {
-        setError("Use demo@receiptvault.com / demo1234 to sign in.");
-        return;
-      }
+      if (!ok) return;
 
       router.push("/dashboard");
     }, 250);
@@ -146,9 +135,9 @@ export function AuthCard({ mode }: { mode: Mode }) {
         </Button>
       </form>
 
-      {error && (
+      {storeError && (
         <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-950 dark:bg-rose-950/40 dark:text-rose-300">
-          {error}
+          {storeError}
         </div>
       )}
 
@@ -177,7 +166,7 @@ export function AuthCard({ mode }: { mode: Mode }) {
       </div>
 
       <div className="mt-6 flex items-center gap-2 rounded-xl bg-muted p-3 text-xs text-muted-foreground">
-        <ShieldCheck size={14} /> Demo credentials: demo@receiptvault.com / demo1234
+        <ShieldCheck size={14} /> Use the real backend account you created in PostgreSQL.
       </div>
     </Card>
   );

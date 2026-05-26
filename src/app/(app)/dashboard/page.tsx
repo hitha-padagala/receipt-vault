@@ -77,7 +77,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="text-lg font-semibold">Monthly spending</div>
-            <div className="text-sm text-muted-foreground">Derived from current mock receipt data</div>
+            <div className="text-sm text-muted-foreground">Derived from the live receipt data in your database</div>
           </div>
           <Badge tone="success">{stats[4].value}</Badge>
         </div>

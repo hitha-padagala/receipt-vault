@@ -48,7 +48,7 @@ export default function SettingsPage() {
         <Card className="p-5">
           <div className="text-lg font-semibold">Export data</div>
           <div className="mt-4 text-sm text-muted-foreground">Export your receipt archive as CSV, JSON, or PDF later.</div>
-          <Button className="mt-4" variant="outline">Export mock data</Button>
+          <Button className="mt-4" variant="outline">Export data</Button>
         </Card>
 
         <Card className="p-5 lg:col-span-2">

@@ -32,7 +32,7 @@ export function DashboardCharts({
             <div className="text-lg font-semibold">Monthly expenses</div>
             <div className="text-sm text-muted-foreground">Derived from the current receipt store</div>
           </div>
-          <Badge tone="success">Mock data</Badge>
+          <Badge tone="success">Live data</Badge>
         </div>
         <div className="h-80">
           <ResponsiveContainer width="100%" height="100%">

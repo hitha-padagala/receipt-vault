@@ -2,7 +2,8 @@
 
 import { create } from "zustand";
 import { Receipt, ReceiptCategory } from "@/types/receipt";
-import { deleteReceipt, getReceiptById, getReceipts, uploadReceipt } from "@/services/receipts";
+import { deleteReceiptRequest, getReceiptRequest, listReceiptsRequest, uploadReceiptRequest } from "@/services/backend-api";
+import { getStoredToken } from "@/services/auth";
 
 type SortKey = "purchaseDate" | "amount" | "merchant";
 
@@ -26,7 +27,15 @@ interface ReceiptState {
   setView: (value: "table" | "grid") => void;
   setPage: (value: number) => void;
   fetchReceipt: (id: string) => Promise<void>;
-  upload: (file: File) => Promise<void>;
+  upload: (payload: {
+    file: File;
+    merchant: string;
+    amount: number;
+    category: ReceiptCategory;
+    purchaseDate: string;
+    warrantyExpiry?: string | null;
+    ocrText?: string | null;
+  }) => Promise<void>;
   removeReceipt: (id: string) => Promise<void>;
 }
 
@@ -46,7 +55,9 @@ export const useReceiptStore = create<ReceiptState>((set, get) => ({
   hydrate: async () => {
     set({ loading: true, error: null });
     try {
-      const data = await getReceipts();
+      const token = getStoredToken();
+      if (!token) throw new Error("Please sign in again.");
+      const data = await listReceiptsRequest(token);
       set({ receipts: data, loading: false });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Failed to load receipts.", loading: false });
@@ -60,20 +71,31 @@ export const useReceiptStore = create<ReceiptState>((set, get) => ({
   fetchReceipt: async (id) => {
     set({ loading: true, error: null });
     try {
-      const receipt = await getReceiptById(id);
+      const token = getStoredToken();
+      if (!token) throw new Error("Please sign in again.");
+      const receipt = await getReceiptRequest(id, token);
       set({ selectedReceipt: receipt, loading: false });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : "Failed to load receipt.", loading: false });
     }
   },
-  upload: async (file) => {
+  upload: async (payload) => {
     set({ uploadProgress: 10, uploadError: null });
     try {
-      const previewUrl = URL.createObjectURL(file);
+      const token = getStoredToken();
+      if (!token) throw new Error("Please sign in again.");
       const timer = window.setInterval(() => {
         set((state) => ({ uploadProgress: Math.min(state.uploadProgress + 18, 92) }));
       }, 180);
-      const receipt = await uploadReceipt({ fileName: file.name, fileType: file.type, previewUrl });
+      const receipt = await uploadReceiptRequest(token, {
+        merchant: payload.merchant,
+        amount: payload.amount,
+        category: payload.category,
+        purchaseDate: payload.purchaseDate,
+        warrantyExpiry: payload.warrantyExpiry,
+        ocrText: payload.ocrText,
+        file: payload.file,
+      });
       window.clearInterval(timer);
       set((state) => ({ receipts: [receipt, ...state.receipts], uploadProgress: 100 }));
       window.setTimeout(() => set({ uploadProgress: 0 }), 700);
@@ -82,7 +104,9 @@ export const useReceiptStore = create<ReceiptState>((set, get) => ({
     }
   },
   removeReceipt: async (id) => {
-    await deleteReceipt(id);
+    const token = getStoredToken();
+    if (!token) throw new Error("Please sign in again.");
+    await deleteReceiptRequest(id, token);
     set((state) => ({ receipts: state.receipts.filter((receipt) => receipt.id !== id) }));
   },
 }));

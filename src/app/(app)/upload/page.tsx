@@ -3,10 +3,13 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/upload/progress";
 import { useReceiptStore } from "@/store/receipt-store";
-import { FileText, Image as ImageIcon, UploadCloud, X } from "lucide-react";
-import { formatMoney } from "@/utils/date";
+import { FileText, UploadCloud, X } from "lucide-react";
+import { ReceiptCategory } from "@/types/receipt";
 
 type PreviewItem = {
   file: File;
@@ -18,6 +21,12 @@ export default function UploadPage() {
   const uploadProgress = useReceiptStore((s) => s.uploadProgress);
   const uploadError = useReceiptStore((s) => s.uploadError);
   const [items, setItems] = useState<PreviewItem[]>([]);
+  const [merchant, setMerchant] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState<ReceiptCategory>("Shopping");
+  const [purchaseDate, setPurchaseDate] = useState("");
+  const [warrantyExpiry, setWarrantyExpiry] = useState("");
+  const [ocrText, setOcrText] = useState("");
 
   const previews = useMemo(() => items, [items]);
 
@@ -31,6 +40,18 @@ export default function UploadPage() {
         preview: URL.createObjectURL(file),
       }));
     setItems((current) => [...next, ...current]);
+  };
+
+  const submitReceipt = (file: File) => {
+    void upload({
+      file,
+      merchant: merchant.trim(),
+      amount: Number(amount),
+      category,
+      purchaseDate,
+      warrantyExpiry: warrantyExpiry || null,
+      ocrText: ocrText || null,
+    });
   };
 
   return (
@@ -67,6 +88,41 @@ export default function UploadPage() {
 
       {uploadError && <Card className="border-rose-200 p-5 text-rose-600">{uploadError}</Card>}
 
+      <Card className="grid gap-4 p-5 md:grid-cols-2">
+        <div>
+          <label className="mb-2 block text-sm">Merchant</label>
+          <Input value={merchant} onChange={(e) => setMerchant(e.target.value)} placeholder="Apple Store" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm">Amount</label>
+          <Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" step="0.01" placeholder="1299.00" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm">Category</label>
+          <Select value={category} onChange={(e) => setCategory(e.target.value as ReceiptCategory)}>
+            <option value="Electronics">Electronics</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Medical">Medical</option>
+            <option value="Fuel">Fuel</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Travel">Travel</option>
+            <option value="Software">Software</option>
+          </Select>
+        </div>
+        <div>
+          <label className="mb-2 block text-sm">Purchase date</label>
+          <Input value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} type="date" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm">Warranty expiry</label>
+          <Input value={warrantyExpiry} onChange={(e) => setWarrantyExpiry(e.target.value)} type="date" />
+        </div>
+        <div>
+          <label className="mb-2 block text-sm">OCR text</label>
+          <Textarea value={ocrText} onChange={(e) => setOcrText(e.target.value)} placeholder="Optional extracted text" rows={4} />
+        </div>
+      </Card>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {previews.map(({ file, preview }) => (
           <Card key={`${file.name}-${file.size}`} className="overflow-hidden">
@@ -89,7 +145,7 @@ export default function UploadPage() {
                   <X size={16} />
                 </Button>
               </div>
-              <Button className="w-full" onClick={() => void upload(file)}>
+              <Button className="w-full" onClick={() => submitReceipt(file)} disabled={!merchant || !amount || !purchaseDate}>
                 Save receipt
               </Button>
             </div>
@@ -98,7 +154,7 @@ export default function UploadPage() {
       </div>
 
       <Card className="p-5 text-sm text-muted-foreground">
-        Fake upload workflow enabled. New receipts are appended to the local store and reflected across the app immediately.
+        Receipts are now created through the backend API and saved in PostgreSQL.
       </Card>
     </div>
   );

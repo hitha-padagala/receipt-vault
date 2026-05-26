@@ -1,8 +1,8 @@
-import { fakeApi } from "@/services/api";
-import { mockUser } from "@/mock/receipts";
 import { User } from "@/types/user";
+import { loginRequest, meRequest, registerRequest, toUser } from "@/services/backend-api";
 
 const AUTH_KEY = "receipt-vault-auth";
+const TOKEN_KEY = "receipt-vault-token";
 
 export function getStoredUser(): User | null {
   if (typeof window === "undefined") return null;
@@ -10,19 +10,44 @@ export function getStoredUser(): User | null {
   return raw ? (JSON.parse(raw) as User) : null;
 }
 
+export function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
+}
+
 export async function login(email: string, password: string) {
-  return fakeApi(() => {
-    if (email.toLowerCase() !== "demo@receiptvault.com" || password !== "demo1234") {
-      throw new Error("Invalid demo credentials.");
-    }
-    if (typeof window !== "undefined") localStorage.setItem(AUTH_KEY, JSON.stringify(mockUser));
-    return mockUser;
-  });
+  const result = await loginRequest(email, password);
+  const user = toUser(result.user);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    localStorage.setItem(TOKEN_KEY, result.token.access_token);
+  }
+  return user;
+}
+
+export async function register(email: string, password: string) {
+  const result = await registerRequest(email, password);
+  const user = toUser(result.user);
+  if (typeof window !== "undefined") {
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    localStorage.setItem(TOKEN_KEY, result.token.access_token);
+  }
+  return user;
+}
+
+export async function refreshStoredUser() {
+  const token = getStoredToken();
+  if (!token) return null;
+  const user = await meRequest(token);
+  const normalized = toUser(user);
+  if (typeof window !== "undefined") localStorage.setItem(AUTH_KEY, JSON.stringify(normalized));
+  return normalized;
 }
 
 export async function logout() {
-  return fakeApi(() => {
-    if (typeof window !== "undefined") localStorage.removeItem(AUTH_KEY);
-    return null;
-  }, { failRate: 0 });
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(AUTH_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+  }
+  return null;
 }

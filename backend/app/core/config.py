@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     DB_HOST: str = "localhost"
     DB_PORT: int = 5432
     DB_NAME: str = "receipt_vault"
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = "postgres"
+    DB_USER: str = "receipt_user"
+    DB_PASSWORD: str = "receipt123"
     SECRET_KEY: str = "change-me-in-local-dev"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     ALGORITHM: str = "HS256"
