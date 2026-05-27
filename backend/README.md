@@ -10,6 +10,7 @@ Local FastAPI backend for the Receipt Vault frontend.
 - Alembic
 - JWT auth
 - Local file uploads
+- Static image serving for uploaded receipts
 
 ## Setup
 
@@ -40,6 +41,7 @@ uvicorn app.main:app --reload --app-dir backend
 - `POST /receipts`
 - `GET /receipts`
 - `GET /receipts/{id}`
+- `PUT /receipts/{id}`
 - `DELETE /receipts/{id}`
 - `GET /analytics/summary`
 - `GET /health`
@@ -47,5 +49,6 @@ uvicorn app.main:app --reload --app-dir backend
 ## Notes
 
 - Receipt uploads are stored locally in `backend/uploads/`.
-- OCR is intentionally not implemented yet.
-- The frontend can now integrate against these local endpoints step-by-step.
+- Uploaded images are served from `/uploads/<filename>`.
+- Receipt edits update the existing record in PostgreSQL.
+- OCR text is accepted and stored, but OCR extraction itself is still client-provided or optional.

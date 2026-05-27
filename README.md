@@ -1,36 +1,112 @@
 # Receipt Vault
 
-Receipt Vault is a modern SaaS-style frontend for managing digital receipts and invoices. It is built as a Next.js 15 App Router application with TypeScript, Tailwind CSS, shadcn/ui-style primitives, Recharts, and Lucide icons.
+Receipt Vault is a receipt management app built with Next.js on the frontend and FastAPI + PostgreSQL on the backend. The app now uses real API calls for authentication, receipt creation, receipt editing, deletion, analytics, and uploaded image display.
 
-## What’s Included
+## Features
 
-- Authentication pages
-- Dashboard with summary cards and charts
-- Upload receipt experience
-- Receipts list with table and card views
-- Receipt detail view
-- Analytics dashboard
-- Settings page
-- Dark/light mode support
-- Mock data only, no backend yet
+- Email/password registration and login
+- JWT-based auth with local token storage
+- Dashboard with live receipt stats and charts
+- Receipt list with table and grid views
+- Receipt detail page with real edit support
+- Upload flow that saves receipts to PostgreSQL
+- Uploaded image preview and receipt image serving from the backend
+- Delete receipts from the UI with confirmation
+- Profile page with basic account details
+- Settings page and theme switcher
 
 ## Tech Stack
 
 - Next.js 15
+- React 19
 - TypeScript
 - Tailwind CSS
+- Zustand
 - Recharts
-- Lucide React
-- next-themes
+- FastAPI
+- SQLAlchemy
+- PostgreSQL
 
-## Demo Login
+## Backend Features
 
-Use these mock credentials to enter the dashboard:
+- `POST /auth/register`
+- `POST /auth/login`
+- `GET /auth/me`
+- `POST /receipts`
+- `GET /receipts`
+- `GET /receipts/{id}`
+- `PUT /receipts/{id}`
+- `DELETE /receipts/{id}`
+- `GET /analytics/summary`
+- `GET /health`
 
-- Email: `demo@receiptvault.com`
-- Password: `demo1234`
+Uploaded files are stored locally in `backend/uploads/` and served from `/uploads`.
 
-## Routes
+## Environment Setup
+
+### Frontend
+
+Create a `.env.local` file in the project root:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+### Backend
+
+Create `backend/.env` from `backend/.env.example`:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=receipt_vault
+DB_USER=receipt_user
+DB_PASSWORD=receipt123
+SECRET_KEY=change-me-in-local-dev
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+```
+
+## Getting Started
+
+1. Install frontend dependencies:
+
+```bash
+npm install
+```
+
+2. Install backend dependencies:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+3. Start PostgreSQL and create the database/user:
+
+```sql
+CREATE DATABASE receipt_vault;
+CREATE USER receipt_user WITH PASSWORD 'receipt123';
+GRANT ALL PRIVILEGES ON DATABASE receipt_vault TO receipt_user;
+```
+
+4. Run the backend:
+
+```bash
+uvicorn app.main:app --reload --app-dir backend
+```
+
+5. Run the frontend:
+
+```bash
+npm run dev
+```
+
+6. Open the app:
+
+```text
+http://localhost:3000
+```
+
+## Key UI Routes
 
 - `/login`
 - `/register`
@@ -40,33 +116,12 @@ Use these mock credentials to enter the dashboard:
 - `/receipts`
 - `/receipts/[id]`
 - `/analytics`
+- `/profile`
 - `/settings`
-
-## Getting Started
-
-1. Install dependencies:
-
-```bash
-npm install
-```
-
-2. Run the dev server:
-
-```bash
-npm run dev
-```
-
-3. Open `http://localhost:3000`
-
-## Project Structure
-
-- `src/app` - App Router pages and layouts
-- `src/components` - Reusable UI and feature components
-- `src/data` - Mock JSON-style data
-- `src/lib` - Utility helpers
 
 ## Notes
 
-- This project is frontend-only right now.
-- Form handling and navigation are mocked for demo purposes.
-- Backend authentication, uploads, and persistence can be added later without changing the UI structure much.
+- Receipts created from the upload page are persisted to PostgreSQL.
+- Receipt images are stored on disk and served from the backend so the detail page can display them.
+- Receipt editing updates the saved record in the database.
+- The old mock-data flow has been replaced by real backend integration.
