@@ -139,6 +139,36 @@ export async function deleteReceiptRequest(id: string, token: string) {
   return true;
 }
 
+export async function updateReceiptRequest(
+  id: string,
+  token: string,
+  payload: {
+    merchant: string;
+    amount: number;
+    category: ReceiptCategory;
+    purchaseDate: string;
+    warrantyExpiry?: string | null;
+    ocrText?: string | null;
+  },
+) {
+  const data = await request<ReceiptResponse>(
+    `/receipts/${id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        merchant: payload.merchant,
+        amount: payload.amount,
+        category: payload.category,
+        purchase_date: payload.purchaseDate,
+        warranty_expiry: payload.warrantyExpiry,
+        ocr_text: payload.ocrText,
+      }),
+    },
+    token,
+  );
+  return toReceipt(data);
+}
+
 export async function uploadReceiptRequest(
   token: string,
   payload: {

@@ -7,7 +7,7 @@ from app.core.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.receipt import Receipt
 from app.models.user import User
-from app.schemas.receipt import ReceiptRead
+from app.schemas.receipt import ReceiptRead, ReceiptUpdate
 from app.services.receipt_service import allowed_upload, save_upload_file
 
 router = APIRouter(prefix="/receipts", tags=["receipts"])
@@ -77,3 +77,25 @@ async def delete_receipt(
     db.delete(receipt)
     db.commit()
     return {"success": True}
+
+
+@router.put("/{receipt_id}", response_model=ReceiptRead)
+async def update_receipt(
+    receipt_id: int,
+    payload: ReceiptUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    receipt = db.query(Receipt).filter(Receipt.id == receipt_id, Receipt.user_id == current_user.id).first()
+    if not receipt:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receipt not found")
+
+    receipt.merchant = payload.merchant
+    receipt.amount = payload.amount
+    receipt.category = payload.category
+    receipt.purchase_date = payload.purchase_date
+    receipt.warranty_expiry = payload.warranty_expiry
+    receipt.ocr_text = payload.ocr_text
+    db.commit()
+    db.refresh(receipt)
+    return receipt

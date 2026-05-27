@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 import { Receipt, ReceiptCategory } from "@/types/receipt";
-import { deleteReceiptRequest, getReceiptRequest, listReceiptsRequest, uploadReceiptRequest } from "@/services/backend-api";
+import { deleteReceiptRequest, getReceiptRequest, listReceiptsRequest, updateReceiptRequest, uploadReceiptRequest } from "@/services/backend-api";
 import { getStoredToken } from "@/services/auth";
 
 type SortKey = "purchaseDate" | "amount" | "merchant";
@@ -37,6 +37,14 @@ interface ReceiptState {
     ocrText?: string | null;
   }) => Promise<void>;
   removeReceipt: (id: string) => Promise<void>;
+  updateReceipt: (id: string, payload: {
+    merchant: string;
+    amount: number;
+    category: ReceiptCategory;
+    purchaseDate: string;
+    warrantyExpiry?: string | null;
+    ocrText?: string | null;
+  }) => Promise<void>;
 }
 
 export const useReceiptStore = create<ReceiptState>((set, get) => ({
@@ -108,6 +116,15 @@ export const useReceiptStore = create<ReceiptState>((set, get) => ({
     if (!token) throw new Error("Please sign in again.");
     await deleteReceiptRequest(id, token);
     set((state) => ({ receipts: state.receipts.filter((receipt) => receipt.id !== id) }));
+  },
+  updateReceipt: async (id, payload) => {
+    const token = getStoredToken();
+    if (!token) throw new Error("Please sign in again.");
+    const updated = await updateReceiptRequest(id, token, payload);
+    set((state) => ({
+      receipts: state.receipts.map((receipt) => (receipt.id === id ? updated : receipt)),
+      selectedReceipt: state.selectedReceipt?.id === id ? updated : state.selectedReceipt,
+    }));
   },
 }));
 

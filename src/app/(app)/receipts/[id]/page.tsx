@@ -1,21 +1,44 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useReceiptStore } from "@/store/receipt-store";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { formatDate, formatMoney, isWarrantyActive } from "@/utils/date";
-import { Download, Pencil, ArrowLeft } from "lucide-react";
+import { Download, Pencil, ArrowLeft, Save, X } from "lucide-react";
+import { ReceiptCategory } from "@/types/receipt";
 
 export default function ReceiptDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const fetchReceipt = useReceiptStore((s) => s.fetchReceipt);
+  const updateReceipt = useReceiptStore((s) => s.updateReceipt);
   const receipt = useReceiptStore((s) => s.selectedReceipt);
   const loading = useReceiptStore((s) => s.loading);
   const error = useReceiptStore((s) => s.error);
+  const [editing, setEditing] = useState(false);
+  const [merchant, setMerchant] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState<ReceiptCategory>("Shopping");
+  const [purchaseDate, setPurchaseDate] = useState("");
+  const [warrantyExpiry, setWarrantyExpiry] = useState("");
+  const [ocrText, setOcrText] = useState("");
+
+  useEffect(() => {
+    if (receipt) {
+      setMerchant(receipt.merchant);
+      setAmount(String(receipt.amount));
+      setCategory(receipt.category);
+      setPurchaseDate(receipt.purchaseDate);
+      setWarrantyExpiry(receipt.warrantyExpiry ?? "");
+      setOcrText(receipt.ocrText ?? "");
+    }
+  }, [receipt]);
 
   useEffect(() => {
     if (params.id) void fetchReceipt(params.id);
@@ -33,6 +56,18 @@ export default function ReceiptDetailPage() {
     return <Card className="p-6">Receipt not found.</Card>;
   }
 
+  const saveChanges = async () => {
+    await updateReceipt(receipt.id, {
+      merchant,
+      amount: Number(amount),
+      category,
+      purchaseDate,
+      warrantyExpiry: warrantyExpiry || null,
+      ocrText: ocrText || null,
+    });
+    setEditing(false);
+  };
+
   return (
     <div className="grid gap-6 xl:grid-cols-3">
       <Card className="overflow-hidden xl:col-span-1">
@@ -48,13 +83,49 @@ export default function ReceiptDetailPage() {
               <Button variant="ghost" className="mb-4 px-0 text-muted-foreground" onClick={() => router.back()}>
                 <ArrowLeft size={16} /> Back
               </Button>
-              <h1 className="text-3xl font-semibold">{receipt.merchant}</h1>
-              <p className="mt-2 text-muted-foreground">{formatDate(receipt.purchaseDate)}</p>
+              {editing ? (
+                <div className="space-y-3">
+                  <Input value={merchant} onChange={(e) => setMerchant(e.target.value)} />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" step="0.01" />
+                    <Select value={category} onChange={(e) => setCategory(e.target.value as ReceiptCategory)}>
+                      <option value="Electronics">Electronics</option>
+                      <option value="Groceries">Groceries</option>
+                      <option value="Medical">Medical</option>
+                      <option value="Fuel">Fuel</option>
+                      <option value="Shopping">Shopping</option>
+                      <option value="Travel">Travel</option>
+                      <option value="Software">Software</option>
+                    </Select>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Input value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} type="date" />
+                    <Input value={warrantyExpiry} onChange={(e) => setWarrantyExpiry(e.target.value)} type="date" />
+                  </div>
+                  <Textarea value={ocrText} onChange={(e) => setOcrText(e.target.value)} rows={4} />
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-3xl font-semibold">{receipt.merchant}</h1>
+                  <p className="mt-2 text-muted-foreground">{formatDate(receipt.purchaseDate)}</p>
+                </>
+              )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline">
-                <Pencil size={16} /> Edit
-              </Button>
+              {editing ? (
+                <>
+                  <Button variant="outline" onClick={() => setEditing(false)}>
+                    <X size={16} /> Cancel
+                  </Button>
+                  <Button variant="gradient" onClick={() => void saveChanges()}>
+                    <Save size={16} /> Save
+                  </Button>
+                </>
+              ) : (
+                <Button variant="outline" onClick={() => setEditing(true)}>
+                  <Pencil size={16} /> Edit
+                </Button>
+              )}
               <Button variant="gradient">
                 <Download size={16} /> Download
               </Button>
