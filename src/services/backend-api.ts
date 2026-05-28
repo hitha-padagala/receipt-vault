@@ -180,6 +180,7 @@ export async function uploadReceiptRequest(
     ocrText?: string | null;
     file: File;
   },
+  onProgress?: (progress: number) => void,
 ) {
   const form = new FormData();
   form.set("merchant", payload.merchant);
@@ -190,14 +191,38 @@ export async function uploadReceiptRequest(
   if (payload.ocrText) form.set("ocr_text", payload.ocrText);
   form.set("file", payload.file);
 
-  const response = await fetch(`${API_BASE_URL}/receipts`, {
-    method: "POST",
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    body: form,
-  });
+  return await new Promise<Receipt>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${API_BASE_URL}/receipts`);
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("Accept", "application/json");
 
-  if (!response.ok) throw new ApiError(await readError(response), response.status);
-  return toReceipt((await response.json()) as ReceiptResponse);
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      const uploadProgress = Math.max(1, Math.min(95, Math.round((event.loaded / event.total) * 95)));
+      onProgress?.(uploadProgress);
+    };
+
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        let message = `Request failed with status ${xhr.status}`;
+        try {
+          const body = JSON.parse(xhr.responseText);
+          message = body?.detail || body?.message || message;
+        } catch {
+          // Keep the fallback message if the body is not JSON.
+        }
+        reject(new ApiError(message, xhr.status));
+        return;
+      }
+
+      onProgress?.(100);
+      resolve(toReceipt(JSON.parse(xhr.responseText) as ReceiptResponse));
+    };
+
+    xhr.onerror = () => reject(new ApiError("Network error while uploading receipt.", 0));
+    xhr.send(form);
+  });
 }
 
 export async function summaryRequest(token: string) {

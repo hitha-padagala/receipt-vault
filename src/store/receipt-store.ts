@@ -92,9 +92,6 @@ export const useReceiptStore = create<ReceiptState>((set, get) => ({
     try {
       const token = getStoredToken();
       if (!token) throw new Error("Please sign in again.");
-      const timer = window.setInterval(() => {
-        set((state) => ({ uploadProgress: Math.min(state.uploadProgress + 18, 92) }));
-      }, 180);
       const receipt = await uploadReceiptRequest(token, {
         merchant: payload.merchant,
         amount: payload.amount,
@@ -103,8 +100,7 @@ export const useReceiptStore = create<ReceiptState>((set, get) => ({
         warrantyExpiry: payload.warrantyExpiry,
         ocrText: payload.ocrText,
         file: payload.file,
-      });
-      window.clearInterval(timer);
+      }, (progress) => set({ uploadProgress: progress }));
       set((state) => ({ receipts: [receipt, ...state.receipts], uploadProgress: 100 }));
       window.setTimeout(() => set({ uploadProgress: 0 }), 700);
     } catch (error) {

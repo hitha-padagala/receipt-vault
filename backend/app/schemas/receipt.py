@@ -30,6 +30,7 @@ class ReceiptRead(ReceiptBase):
     id: int
     user_id: int
     image_url: str
+    cloudinary_public_id: str
     created_at: datetime
 
     class Config:

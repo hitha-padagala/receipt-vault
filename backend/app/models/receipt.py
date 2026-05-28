@@ -15,6 +15,7 @@ class Receipt(Base):
     purchase_date = Column(Date, nullable=False)
     warranty_expiry = Column(Date, nullable=True)
     image_url = Column(String(500), nullable=False)
+    cloudinary_public_id = Column(String(500), nullable=False)
     ocr_text = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
