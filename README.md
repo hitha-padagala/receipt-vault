@@ -1,5 +1,4 @@
 # Receipt Vault
-
 Receipt Vault is a receipt management app built with Next.js on the frontend and FastAPI + PostgreSQL on the backend. The app now uses real API calls for authentication, receipt creation, receipt editing, deletion, analytics, and uploaded image display.
 
 ## Features
