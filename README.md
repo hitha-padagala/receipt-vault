@@ -8,8 +8,8 @@ Receipt Vault is a receipt management app built with Next.js on the frontend and
 - Dashboard with live receipt stats and charts
 - Receipt list with table and grid views
 - Receipt detail page with real edit support
-- Upload flow that saves receipts to PostgreSQL
-- Uploaded image preview and receipt image serving from the backend
+- Upload flow that saves receipt metadata to PostgreSQL and images to Cloudinary
+- Uploaded image preview and receipt image display from Cloudinary URLs
 - Delete receipts from the UI with confirmation
 - Profile page with basic account details
 - Settings page and theme switcher
@@ -39,7 +39,7 @@ Receipt Vault is a receipt management app built with Next.js on the frontend and
 - `GET /analytics/summary`
 - `GET /health`
 
-Uploaded files are stored locally in `backend/uploads/` and served from `/uploads`.
+Uploaded receipt images are stored in Cloudinary, while receipt metadata stays in PostgreSQL.
 
 ## Environment Setup
 
@@ -56,13 +56,14 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 Create `backend/.env` from `backend/.env.example`:
 
 ```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=receipt_vault
-DB_USER=receipt_user
-DB_PASSWORD=receipt123
+DATABASE_URL=postgresql+psycopg://receipt_user:receipt123@localhost:5432/receipt_vault
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 SECRET_KEY=change-me-in-local-dev
 ACCESS_TOKEN_EXPIRE_MINUTES=60
+ALGORITHM=HS256
+CLOUDINARY_FOLDER=receipt-vault/receipts
 ```
 
 ## Getting Started
@@ -87,19 +88,25 @@ CREATE USER receipt_user WITH PASSWORD 'receipt123';
 GRANT ALL PRIVILEGES ON DATABASE receipt_vault TO receipt_user;
 ```
 
-4. Run the backend:
+4. Run database migrations:
+
+```bash
+alembic upgrade head
+```
+
+5. Run the backend:
 
 ```bash
 uvicorn app.main:app --reload --app-dir backend
 ```
 
-5. Run the frontend:
+6. Run the frontend:
 
 ```bash
 npm run dev
 ```
 
-6. Open the app:
+7. Open the app:
 
 ```text
 http://localhost:3000
@@ -119,7 +126,7 @@ http://localhost:3000
 
 ## Notes
 
-- Receipts created from the upload page are persisted to PostgreSQL.
-- Receipt images are stored on disk and served from the backend so the detail page can display them.
+- Receipts created from the upload page are persisted to PostgreSQL and their images are uploaded to Cloudinary.
+- Receipt deletion removes the Cloudinary image as well as the database row.
 - Receipt editing updates the saved record in the database.
 - The old mock-data flow has been replaced by real backend integration.

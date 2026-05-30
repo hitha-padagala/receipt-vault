@@ -9,12 +9,12 @@ Local FastAPI backend for the Receipt Vault frontend.
 - SQLAlchemy
 - Alembic
 - JWT auth
-- Local file uploads
-- Static image serving for uploaded receipts
+- Cloudinary image uploads
+- Uploaded receipt image URLs
 
 ## Setup
 
-1. Copy `.env.example` to `.env` and adjust your local PostgreSQL values.
+1. Copy `.env.example` to `.env` and adjust your local PostgreSQL and Cloudinary values.
 2. Install dependencies:
 
 ```bash
@@ -48,7 +48,7 @@ uvicorn app.main:app --reload --app-dir backend
 
 ## Notes
 
-- Receipt uploads are stored locally in `backend/uploads/`.
-- Uploaded images are served from `/uploads/<filename>`.
+- Receipt uploads are stored in Cloudinary and the secure URL is saved in PostgreSQL.
+- Receipt deletions remove the associated Cloudinary asset.
 - Receipt edits update the existing record in PostgreSQL.
 - OCR text is accepted and stored, but OCR extraction itself is still client-provided or optional.
