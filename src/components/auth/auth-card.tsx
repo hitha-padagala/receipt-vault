@@ -56,6 +56,9 @@ export function AuthCard({ mode }: { mode: Mode }) {
 
   return (
     <Card className="w-full max-w-md p-8 shadow-soft">
+      <div className="mb-4 inline-flex rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300">
+        Secure receipt workspace
+      </div>
       <div className="mb-6">
         <div className="text-2xl font-semibold">{title}</div>
         <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
