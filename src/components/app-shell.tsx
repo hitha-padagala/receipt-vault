@@ -1,21 +1,22 @@
 "use client";
 
-import { LayoutDashboard, ReceiptText, Upload, LineChart, Settings, Search, Menu, Bell, Plus, LogOut, UserCircle2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { LayoutDashboard, ReceiptText, Upload, LineChart, Settings, Search, Menu, Bell, Plus, UserCircle2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuthStore } from "@/store/auth-store";
-import { useInitialAuth } from "@/hooks/use-initial-auth";
 
 const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/receipts", label: "Receipts", icon: ReceiptText },
   { href: "/upload", label: "Upload", icon: Upload },
   { href: "/analytics", label: "Analytics", icon: LineChart },
+  { href: "/expenses", label: "Expenses", icon: ReceiptText },
+  { href: "/categories", label: "Categories", icon: Settings },
+  { href: "/reports", label: "Reports", icon: LineChart },
   { href: "/profile", label: "Profile", icon: UserCircle2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -24,24 +25,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const user = useAuthStore((state) => state.user);
-  const hydrated = useAuthStore((state) => state.hydrated);
-  const logout = useAuthStore((state) => state.logout);
-  useInitialAuth();
-
-  useEffect(() => {
-    if (hydrated && !user) router.replace("/login");
-  }, [hydrated, router, user]);
 
   return (
     <div className="page-shell min-h-screen">
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside className={cn("fixed inset-y-0 left-0 z-40 w-72 border-r border-border bg-background/90 p-4 backdrop-blur xl:static xl:translate-x-0", open ? "translate-x-0" : "-translate-x-full xl:translate-x-0")}>
           <div className="mb-8 flex items-center justify-between">
-            <div>
-              <div className="text-lg font-semibold">Receipt Vault</div>
-              <div className="text-xs text-muted-foreground">Digital receipt intelligence</div>
-            </div>
+              <div>
+              <div className="text-lg font-semibold">Smart Receipt & Expense Manager</div>
+              <div className="text-xs text-muted-foreground">Local-first expense intelligence</div>
+              </div>
           </div>
           <nav className="space-y-1">
             {nav.map(({ href, label, icon: Icon }) => (
@@ -60,26 +53,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </nav>
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-indigo-600 to-sky-500 p-4 text-white">
             <div className="text-sm font-medium">Quick upload</div>
-            <div className="mt-1 text-sm/6 text-white/80">Capture receipts instantly from anywhere.</div>
+            <div className="mt-1 text-sm/6 text-white/80">Capture receipts and link them to expenses instantly.</div>
             <Button
               type="button"
               className="mt-4 w-full bg-white text-slate-900 hover:bg-white/90"
               onClick={() => router.push("/upload")}
             >
               <Plus size={16} /> Upload receipt
-            </Button>
-          </div>
-          <div className="mt-8">
-            <Button
-              type="button"
-              variant="ghost"
-              className="w-full justify-start text-muted-foreground"
-              onClick={async () => {
-                await logout();
-                router.push("/login");
-              }}
-            >
-              <LogOut size={16} /> Sign out
             </Button>
           </div>
         </aside>

@@ -1,9 +1,0 @@
-import { AuthGuard } from "@/components/auth/auth-guard";
-
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="page-shell flex min-h-screen items-center justify-center p-4">
-      <AuthGuard>{children}</AuthGuard>
-    </div>
-  );
-}

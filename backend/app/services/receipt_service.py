@@ -1,4 +1,3 @@
-from datetime import date
 from pathlib import Path
 from uuid import uuid4
 
@@ -19,6 +18,19 @@ async def save_upload_file(file: UploadFile, upload_dir: str) -> str:
     content = await file.read()
     destination.write_bytes(content)
     return f"/uploads/{unique_name}"
+
+
+def delete_uploaded_file(image_url: str, upload_dir: str) -> None:
+    if not image_url:
+        return
+
+    filename = Path(image_url).name
+    if not filename:
+        return
+
+    file_path = Path(upload_dir) / filename
+    if file_path.exists():
+        file_path.unlink()
 
 
 def allowed_upload(filename: str) -> bool:

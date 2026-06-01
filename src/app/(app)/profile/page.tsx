@@ -3,7 +3,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/store/auth-store";
 import { useReceiptStore } from "@/store/receipt-store";
 import { formatMoney } from "@/utils/date";
 import { ArrowLeft, Mail, ShieldCheck, UserCircle2 } from "lucide-react";
@@ -11,7 +10,6 @@ import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
   const receipts = useReceiptStore((s) => s.receipts);
 
   const totalSpent = receipts.reduce((sum, receipt) => sum + receipt.amount, 0);
@@ -36,8 +34,8 @@ export default function ProfilePage() {
               <UserCircle2 size={34} />
             </div>
             <div>
-              <div className="text-2xl font-semibold">{user?.name ?? "Unknown user"}</div>
-              <div className="mt-1 text-white/80">{user?.email ?? "No email available"}</div>
+              <div className="text-2xl font-semibold">Demo User</div>
+              <div className="mt-1 text-white/80">demo@receiptvault.local</div>
             </div>
           </div>
         </div>
@@ -47,13 +45,13 @@ export default function ProfilePage() {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Mail size={14} /> Email
             </div>
-            <div className="mt-2 font-medium">{user?.email ?? "-"}</div>
+            <div className="mt-2 font-medium">demo@receiptvault.local</div>
           </div>
           <div className="rounded-2xl bg-muted p-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <ShieldCheck size={14} /> Role
             </div>
-            <div className="mt-2 font-medium capitalize">{user?.role ?? "member"}</div>
+            <div className="mt-2 font-medium capitalize">member</div>
           </div>
           <div className="rounded-2xl bg-muted p-4">
             <div className="text-sm text-muted-foreground">Receipts</div>
@@ -72,7 +70,7 @@ export default function ProfilePage() {
           <div className="mt-4 space-y-3 text-sm">
             <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
               <span className="text-muted-foreground">User ID</span>
-              <span className="font-medium">{user?.id ?? "-"}</span>
+              <span className="font-medium">demo-user</span>
             </div>
             <div className="flex items-center justify-between rounded-xl bg-muted px-4 py-3">
               <span className="text-muted-foreground">Account status</span>

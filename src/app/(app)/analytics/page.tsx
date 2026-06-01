@@ -46,7 +46,7 @@ export default function AnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-semibold">Analytics</h1>
-        <p className="mt-2 text-muted-foreground">Charts are generated from live receipt records in the backend.</p>
+        <p className="mt-2 text-muted-foreground">Charts are generated from local receipt and expense records.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

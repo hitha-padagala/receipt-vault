@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { useAuthStore } from "@/store/auth-store";
 
 export default function SettingsPage() {
-  const user = useAuthStore((s) => s.user);
-
   return (
     <div className="space-y-6">
       <div>
@@ -21,8 +18,8 @@ export default function SettingsPage() {
         <Card className="p-5">
           <div className="text-lg font-semibold">Profile settings</div>
           <div className="mt-4 space-y-4">
-            <Input value={user?.name ?? ""} readOnly placeholder="Name" />
-            <Input value={user?.email ?? ""} readOnly placeholder="Email" />
+            <Input value="Demo User" readOnly placeholder="Name" />
+            <Input value="demo@receiptvault.local" readOnly placeholder="Email" />
             <Textarea defaultValue="Manage your Receipt Vault profile and organization details." />
             <Button variant="outline">Save profile</Button>
           </div>

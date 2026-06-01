@@ -11,7 +11,7 @@ import { Progress } from "@/components/upload/progress";
 import { useReceiptStore } from "@/store/receipt-store";
 import { FileText, UploadCloud, X } from "lucide-react";
 import { ReceiptCategory } from "@/types/receipt";
-import { formatDate, isWarrantyActive } from "@/utils/date";
+import { formatDate, formatMoney, isWarrantyActive } from "@/utils/date";
 
 type PreviewItem = {
   file: File;
@@ -165,7 +165,7 @@ export default function UploadPage() {
       <Card className="p-5">
         <div className="mb-4">
           <div className="text-lg font-semibold">Saved receipts</div>
-          <p className="text-sm text-muted-foreground">Delete a receipt from PostgreSQL without leaving upload.</p>
+          <p className="text-sm text-muted-foreground">Delete a receipt record without leaving upload.</p>
         </div>
         <div className="space-y-3">
           {receipts.slice(0, 5).map((receipt) => (
@@ -173,7 +173,7 @@ export default function UploadPage() {
               <div>
                 <div className="font-medium">{receipt.merchant}</div>
                 <div className="text-sm text-muted-foreground">
-                  {receipt.category} · {formatDate(receipt.purchaseDate)} · ${receipt.amount.toFixed(2)}
+                  {receipt.category} · {formatDate(receipt.purchaseDate)} · {formatMoney(receipt.amount)}
                 </div>
                 <div className="mt-2">
                   <Badge tone={receipt.warrantyExpiry ? (isWarrantyActive(receipt.warrantyExpiry) ? "success" : "warning") : "outline"}>
@@ -182,7 +182,7 @@ export default function UploadPage() {
                 </div>
               </div>
               <Button
-                variant="destructive"
+                variant="outline"
                 onClick={() => {
                   if (window.confirm(`Delete receipt from ${receipt.merchant}? This cannot be undone.`)) {
                     void removeReceipt(receipt.id);

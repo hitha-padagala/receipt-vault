@@ -6,8 +6,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Receipt Vault",
-  description: "A modern receipt and invoice vault dashboard.",
+  title: "Smart Receipt & Expense Manager",
+  description: "A professional SaaS workspace for managing receipts, expenses, categories, analytics, and reports.",
 };
 
 export default function RootLayout({

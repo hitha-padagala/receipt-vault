@@ -7,8 +7,7 @@ from app.core.dependencies import get_current_user
 from app.models.receipt import Receipt
 from app.models.user import User
 from app.schemas.receipt import ReceiptRead, ReceiptUpdate
-from app.services.cloudinary_service import delete_image, upload_image
-from app.services.receipt_service import allowed_upload
+from app.services.receipt_service import allowed_upload, delete_uploaded_file, save_upload_file
 
 router = APIRouter(prefix="/receipts", tags=["receipts"])
 
@@ -28,8 +27,7 @@ async def create_receipt(
     if not allowed_upload(file.filename or ""):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unsupported file type")
 
-    file_bytes = await file.read()
-    upload_result = await upload_image(file_bytes, file.filename or "receipt")
+    image_url = await save_upload_file(file, "uploads")
     receipt = Receipt(
         user_id=current_user.id,
         merchant=merchant,
@@ -37,8 +35,8 @@ async def create_receipt(
         category=category,
         purchase_date=purchase_date,
         warranty_expiry=warranty_expiry or None,
-        image_url=upload_result["secure_url"],
-        cloudinary_public_id=upload_result["public_id"],
+        image_url=image_url,
+        cloudinary_public_id=image_url,
         ocr_text=ocr_text,
     )
     db.add(receipt)
@@ -76,7 +74,7 @@ async def delete_receipt(
     receipt = db.query(Receipt).filter(Receipt.id == receipt_id, Receipt.user_id == current_user.id).first()
     if not receipt:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Receipt not found")
-    await delete_image(receipt.cloudinary_public_id)
+    delete_uploaded_file(receipt.image_url, "uploads")
     db.delete(receipt)
     db.commit()
     return {"success": True}
