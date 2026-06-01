@@ -8,7 +8,8 @@ import { Select } from "@/components/ui/select";
 import { Pagination } from "@/components/ui/pagination";
 import { ReceiptCard } from "@/components/receipts/receipt-card";
 import { ReceiptTable } from "@/components/receipts/receipt-table";
-import { useReceiptStore, getFilteredReceipts } from "@/store/receipt-store";
+import { useReceiptStore } from "@/store/receipt-store";
+import { useReceipts } from "@/hooks/use-receipts";
 import { ReceiptCategory } from "@/types/receipt";
 import { Grid2x2, Table2 } from "lucide-react";
 
@@ -18,14 +19,14 @@ export default function ReceiptsPage() {
   const hydrate = useReceiptStore((s) => s.hydrate);
   const removeReceipt = useReceiptStore((s) => s.removeReceipt);
   const state = useReceiptStore();
-  const filtered = useMemo(() => getFilteredReceipts(state), [state]);
+  const { filteredReceipts } = useReceipts();
 
   useEffect(() => {
     void hydrate();
   }, [hydrate]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / state.pageSize));
-  const pageItems = filtered.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
+  const totalPages = Math.max(1, Math.ceil(filteredReceipts.length / state.pageSize));
+  const pageItems = filteredReceipts.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
 
   return (
     <div className="space-y-6">
@@ -64,9 +65,9 @@ export default function ReceiptsPage() {
         </div>
       </Card>
 
-      {state.loading && filtered.length === 0 ? (
+      {state.loading && filteredReceipts.length === 0 ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted" />
-      ) : filtered.length === 0 ? (
+      ) : filteredReceipts.length === 0 ? (
         <Card className="p-10 text-center text-muted-foreground">No receipts matched your filters.</Card>
       ) : (
         <>

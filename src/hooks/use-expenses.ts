@@ -37,9 +37,13 @@ export function useExpenses() {
       .sort((a, b) => (amountSort === "asc" ? a.amount - b.amount : b.amount - a.amount));
   }, [amountSort, categoryFilter, dateFrom, dateTo, expenseQuery, expenses]);
 
+  const visibleExpenses = useMemo(() => {
+    return filteredExpenses.filter((expense) => expense.id && expense.title && expense.vendor);
+  }, [filteredExpenses]);
+
   return {
     expenses,
-    filteredExpenses,
+    filteredExpenses: visibleExpenses,
     expenseQuery,
     setExpenseQuery,
     categoryFilter,
