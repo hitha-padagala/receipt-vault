@@ -60,3 +60,4 @@ http://localhost:3000
 - Receipt deletion removes the saved browser record.
 - Receipt editing updates the saved browser record.
 - The workspace uses a built-in demo dataset that can be extended from the UI.
+- 
